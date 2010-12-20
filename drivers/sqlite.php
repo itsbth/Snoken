@@ -11,7 +11,7 @@ class SQLiteDriver extends Driver
   
   public function __construct($conn)
   {
-    $this->_connection = new \PDO($conn);
+    $this->_connection = new \PDO("sqlite:{$conn}");
     $this->_connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
   }
   

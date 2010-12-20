@@ -14,11 +14,11 @@ class User extends SimpleORM\Base
   );
 }
 
-$driver = new SimpleORM\Drivers\SQLiteDriver("sqlite:/home/itsbth/Aptana Studio 3 Workspace/SimpleORM/test.db");
+if (file_exists('./test.db')) unlink('./test.db');
+
+$driver = new SimpleORM\Drivers\SQLiteDriver(realpath('./test.db'));
 SimpleORM\Manager::setDriver($driver);
 SimpleORM\Manager::registerModel('User');
-//SimpleORM\Manager::createTables();
-//echo $driver->insert('user', array('name' => 'itsbth', 'age' => 19, 'email' => 'itsbth@itsbth.com')), "\n";
 $user = new User();
 $user->name = 'itsbth';
 $user->age = 19;
