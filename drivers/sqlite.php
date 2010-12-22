@@ -30,14 +30,20 @@ class SQLiteDriver extends Driver
     $cond = $this->conditionToSQL($condition);
     $sql = "SELECT * FROM {$table} WHERE " . array_shift($cond);
     if ($order)
+    {
+      if ($order[0] == '-')
+        $order = substr($order, 1) . " DESC";
       $sql .= " ORDER BY {$order}";
+    }
     if ($limit)
       $sql .= " LIMIT {$limit}";
     $sql .= ";";
+    echo $sql, "\n";
+    print_r($cond);
     $stmnt = $this->_connection->prepare($sql);
     if (!$stmnt) print_r($this->_connection->errorInfo());
     $stmnt->execute($cond);
-    return $stmnt;
+    return new PDOResultSet($stmnt);
   }
   public function update($table, $fields, $condition)
   {
@@ -105,5 +111,22 @@ class SQLiteDriver extends Driver
       $out[] = "{$field} = ?";
     }
     return array_merge(array(implode(' AND ', $out)), array_values($condition));
+  }
+}
+
+class PDOResultSet extends ResultSet
+{
+  private $_stmnt;
+  public function __construct($stmnt)
+  {
+    $this->_stmnt = $stmnt;
+  }
+  public function count()
+  {
+    return $this->_stmnt->rowCount();
+  }
+  public function next()
+  {
+    return $this->_stmnt->fetch(\PDO::FETCH_ASSOC);
   }
 }

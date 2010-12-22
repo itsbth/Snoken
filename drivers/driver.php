@@ -11,3 +11,16 @@ abstract class Driver
   
   public abstract function createTable($table, $fields); 
 }
+
+abstract class ResultSet
+{
+  public abstract function count();
+  public abstract function next();
+  
+  public function one()
+  {
+    echo $this->count(), "\n";
+    if ($this->count() > 1) throw new \Exception("More than one row returned.");
+    return $this->next();
+  } 
+}

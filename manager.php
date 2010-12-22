@@ -57,7 +57,7 @@ class Manager
    */
   public static function getById($table, $id)
   {
-    $row = self::$_driver->select($table, array('id' => $id), null, 1)->fetch(\PDO::FETCH_ASSOC);
+    $row = self::$_driver->select($table, array('id' => $id), null, 1)->one();
     if (!$row) return null;
     $class = self::$_models[$table];
     return new $class($row, $id);
@@ -65,14 +65,40 @@ class Manager
   
   public static function select($table, $query, $order = null, $limit = null)
   {
-    $rows = self::$_driver->select($table, $query, $order, $limit)->fetchArray(\PDO::FETCH_ASSOC);
+    $res = self::$_driver->select($table, $query, $order, $limit);
     $class = self::$_models[$table];
-    $out = array();
-    foreach ($rows as $row)
-    {
-      $out[] = new $class($row, $id);
-    }
-    return $out;
+
+    return new QueryResult($class, $res);
+  }
+}
+
+class QueryResult
+{
+  private $_class;
+  private $_resultSet;
+  
+  public function __construct($class, $resultSet)
+  {
+    $this->_class = $class;
+    $this->_resultSet = $resultSet;
   }
   
+  public function count()
+  {
+    return $this->_resultSet->count();
+  }
+  
+  public function next()
+  {
+    $class = $this->_class;
+    $row = $this->_resultSet->next();
+    if(!$row) return null;
+    return new $class($row, $row['id']);
+  }
+  
+  public function one()
+  {
+    if ($this->count() > 1) throw new \Exception("More than one row returned.");
+      return $this->next();
+  }
 }
