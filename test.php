@@ -1,4 +1,5 @@
 <?php
+error_reporting(E_ALL | E_NOTICE);
 require_once 'drivers/driver.php';
 require_once 'drivers/sqlite.php';
 require_once 'manager.php';
@@ -30,7 +31,6 @@ class Post extends SimpleORM\Base
   );
 }
 
-
 if (file_exists('./test.db')) unlink('./test.db');
 
 $driver = new SimpleORM\Drivers\SQLiteDriver(dirname(__FILE__) . "/" . "test.db");
@@ -48,20 +48,20 @@ $post = new Post();
 $post->title = "Hello, World!";
 $post->content = "CONTENT HERE KTXH.";
 $user->save();
-echo $user->id, "\n";
-$post->user_id = $user->id;
+
+$post->user = $user;
 $post->save();
 
 $user2 = User::getById($user->id);
-echo $user2->name, "\n";
+
 $user2->age = "not a number";
 $errors = null;
 if (!$user2->validate($errors))
   print_r($errors);
-// $user2->save(); // Throws an exception
+//$user2->save(); // Throws an exception
 
 $user3 = User::select(array('age > ?', 18), null, 1)->one();
-echo $user3->age, "\n";
+
 $posts = $user3->posts;
 while ($post = $posts->next())
 {

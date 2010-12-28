@@ -52,15 +52,21 @@ class Manager
     }
   }
   
+  private static $_cache = array();
+  
   /**
    * Get record by table and id.
    */
   public static function getById($table, $id)
   {
+    if (!isset(self::$_cache[$table])) self::$_cache[$table] = array();
+    if (isset(self::$_cache[$table][$id])) return self::$_cache[$table][$id];
     $row = self::$_driver->select($table, array('id' => $id), null, 1)->one();
     if (!$row) return null;
     $class = self::$_models[$table];
-    return new $class($row, $id);
+    $object = new $class($row, $id);
+    self::$_cache[$table][$id] = $object;
+    return $object;
   }
   
   public static function select($table, $query, $order = null, $limit = null)

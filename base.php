@@ -18,31 +18,43 @@ class Base
   
   public function __get($field)
   {
-    if ($field == 'id') return $this->_id;
-    if (isset($this->_fields[$field])) return $this->_fields[$field];
-    if (isset(static::$fields[$field])) return null;
-    if (isset($this->_cache[$field])) return $this->_cache[$field];
+    if ($field == 'id')
+      return $this->_id;
+    if (isset($this->_fields[$field]))
+      return $this->_fields[$field];
+    if (isset(static::$fields[$field]))
+      return null;    
     if (isset(static::$has[$field]))
-    {
       return Manager::select(static::$has[$field][0], array(static::$has[$field]['field'] => $this->_id));
-    }
     if (isset(static::$belongs_to[$field]))
-    {
       return Manager::getById(static::$belongs_to[$field][0], $this->{$belongs_to[$field]['field']});
-    }
     // TODO: Create new exception
-    throw new \Exception("Field '{$field}' not in model.");
+    throw new \SnokenException("Field '{$field}' not in model.");
   }
   
   public function __set($field, $value)
   {
-    if ($field == 'id') throw new \Exception("Field 'id' can not be modified.");
+    if ($field == 'id') throw new \SnokenException("Field 'id' can not be modified.");
     // TODO: Create new exception
-    if (!isset(static::$fields[$field])) throw new \Exception("Field '{$field}' not in model.");
-    if (isset($this->_fields[$field]) && $this->_fields[$field] === $value) return; 
-    $this->_fields[$field] = $value;
-    if (!in_array($field, $this->_changed))
-      $this->_changed[] = $field;
+    if (isset(static::$fields[$field]))
+    {
+      if (isset($this->_fields[$field]) && $this->_fields[$field] === $value) return; 
+      $this->_fields[$field] = $value;
+      if (!in_array($field, $this->_changed))
+        $this->_changed[] = $field;
+    }
+    else if (isset(static::$belongs_to[$field]))
+    {
+      $info = static::$belongs_to[$field];
+      $field = $info['field'];
+      echo $field, "\n";
+      if (!$value->saved()) $value->save();
+      $this->{$field} = $value->id;
+    }
+    else
+    {
+      throw new \SnokenException("Field '{$field}' not in model.");
+    }
   }
   
   public function validate(&$errors = null)
@@ -72,9 +84,33 @@ class Base
     return count($errors) == 0;
   }
   
+  public function saved()
+  {
+    return $this->_id != null;
+  }
+  
   public function save()
   {
-    if (!$this->validate()) throw new \Exception("INVALID KEKEKE");
+    $errors = null;
+    if (!$this->validate($errors))
+    {
+      print_r($errors);
+      throw new \SnokenException("Object is not valid.");
+    }
+    /*
+    foreach (static::$belongs_to as $name => $info)
+    {
+      if (!isset($this->_fields[$name])) continue;
+      $type = array_shift($info);
+      $field = $info['field'];
+      $object = $this->{$name};
+      // TODO: Fix case
+      // if (get_class($object) != )
+      if (!$object->id)
+        $object->save();
+      $this->{$field} = $object->id;
+    }
+    */
     if (count($this->_changed) == 0) return;
     $fields = array();
     foreach ($this->_changed as $field)
@@ -93,7 +129,7 @@ class Base
   
   public function delete()
   {
-    if (!$this->_id) throw new \Exception("You must save it first, you dolt.");
+    if (!$this->_id) throw new \SnokenException("You must save it first, you dolt.");
     Manager::getDriver()->delete(static::$table, array('id' => $this->_id));
   }
   
@@ -110,4 +146,8 @@ class Base
   protected static $has = array();
   protected static $belongs_to = array();
 
+}
+
+class SnokenException extends \Exception
+{
 }
