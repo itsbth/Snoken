@@ -1,5 +1,5 @@
 <?php
-namespace SimpleORM;
+namespace Snoken;
 
 /**
  * Static manager class.
@@ -7,7 +7,7 @@ namespace SimpleORM;
 class Manager
 {
   /**
-   * @var \SimpleORM\Driver
+   * @var \Snoken\Driver
    */
   private static $_driver;
   

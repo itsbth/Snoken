@@ -1,11 +1,11 @@
 <?php
 error_reporting(E_ALL | E_NOTICE);
-require_once 'drivers/driver.php';
-require_once 'drivers/sqlite.php';
-require_once 'manager.php';
-require_once 'base.php';
+require_once 'snoken/drivers/driver.php';
+require_once 'snoken/drivers/sqlite.php';
+require_once 'snoken/manager.php';
+require_once 'snoken/base.php';
 
-class User extends SimpleORM\Base
+class User extends Snoken\Base
 {
   public static $table = 'user';
   public static $fields = array(
@@ -18,7 +18,7 @@ class User extends SimpleORM\Base
   );
 }
 
-class Post extends SimpleORM\Base
+class Post extends Snoken\Base
 {
   public static $table = 'post';
   public static $fields = array(
@@ -33,11 +33,11 @@ class Post extends SimpleORM\Base
 
 if (file_exists('./test.db')) unlink('./test.db');
 
-$driver = new SimpleORM\Drivers\SQLiteDriver(dirname(__FILE__) . "/" . "test.db");
-SimpleORM\Manager::setDriver($driver);
-SimpleORM\Manager::registerModel('User');
-SimpleORM\Manager::registerModel('Post');
-SimpleORM\Manager::createTables();
+$driver = new Snoken\Drivers\SQLiteDriver(dirname(__FILE__) . "/" . "test.db");
+Snoken\Manager::setDriver($driver);
+Snoken\Manager::registerModel('User');
+Snoken\Manager::registerModel('Post');
+Snoken\Manager::createTables();
 
 $user = new User();
 $user->name = 'itsbth';

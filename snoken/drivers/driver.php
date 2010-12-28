@@ -1,5 +1,5 @@
 <?php
-namespace SimpleORM\Drivers;
+namespace Snoken\Drivers;
 
 abstract class Driver
 {

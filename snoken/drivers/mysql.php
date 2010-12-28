@@ -1,5 +1,5 @@
 <?php
-namespace SimpleORM\Drivers;
+namespace Snoken\Drivers;
 
 class SQLiteDriver extends Driver
 {
@@ -9,9 +9,9 @@ class SQLiteDriver extends Driver
    */
   private $_connection;
   
-  public function __construct($conn)
+  public function __construct($dsn)
   {
-    $this->_connection = new \PDO("sqlite:{$conn}");
+    $this->_connection = new \PDO("mysql:{$conn}");
     $this->_connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
   }
   
@@ -72,6 +72,7 @@ class SQLiteDriver extends Driver
   
   public function createTable($table, $fields)
   {
+    throw new \Snoken\SnokenException("MySQL driver does not support table generation yet.");
     $sql = array();
     foreach ($fields as $name => $options)
     {

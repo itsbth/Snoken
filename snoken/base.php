@@ -1,5 +1,5 @@
 <?php
-namespace SimpleORM;
+namespace Snoken;
 
 class Base
 {
