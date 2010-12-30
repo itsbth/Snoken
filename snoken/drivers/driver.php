@@ -18,8 +18,7 @@ abstract class ResultSet
   public abstract function next();
   
   public function one()
-  {
-    echo $this->count(), "\n";
+  {    
     if ($this->count() > 1) throw new \Exception("More than one row returned.");
     return $this->next();
   } 
