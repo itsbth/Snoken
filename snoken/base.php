@@ -46,8 +46,7 @@ class Base
     else if (isset(static::$belongs_to[$field]))
     {
       $info = static::$belongs_to[$field];
-      $field = $info['field'];
-      echo $field, "\n";
+      $field = $info['field'];      
       if (!$value->saved()) $value->save();
       $this->{$field} = $value->id;
     }

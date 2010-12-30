@@ -21,6 +21,7 @@ class SQLiteDriver extends Driver
     $values = implode(', ', array_fill(0, count($fields), '?'));
     $sql = "INSERT INTO {$table} ($fieldnames) VALUES ($values);";
     $stmnt = $this->_connection->prepare($sql);
+    // TODO: Throw exception
     if (!$stmnt) print_r($this->_connection->errorInfo());
     $stmnt->execute(array_values($fields));
     return $this->_connection->lastInsertId();
@@ -37,10 +38,9 @@ class SQLiteDriver extends Driver
     }
     if ($limit)
       $sql .= " LIMIT {$limit}";
-    $sql .= ";";
-    echo $sql, "\n";
-    print_r($cond);
+    $sql .= ";";    
     $stmnt = $this->_connection->prepare($sql);
+    // TODO: Throw exception
     if (!$stmnt) print_r($this->_connection->errorInfo());
     $stmnt->execute($cond);
     return new PDOResultSet($stmnt);
@@ -58,6 +58,7 @@ class SQLiteDriver extends Driver
     $where = array_shift($cond);
     $sql = "UPDATE {$table} SET {$values} WHERE {$where};";
     $stmnt = $this->_connection->prepare($sql);
+    // TODO: Throw exception
     if (!$stmnt) print_r($this->_connection->errorInfo());
     $stmnt->execute(array_merge(array_values($fields), $cond));
   }
@@ -66,6 +67,7 @@ class SQLiteDriver extends Driver
     $cond = $this->conditionToSQL($condition);
     $sql = "DELETE FROM {$table} WHERE " . array_shift($cond) . ";";
     $stmnt = $this->_connection->prepare($sql);
+    // TODO: Throw exception
     if (!$stmnt) print_r($this->_connection->errorInfo());
     $stmnt->execute($cond);
   }
