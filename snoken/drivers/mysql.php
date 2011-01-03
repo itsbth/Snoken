@@ -1,7 +1,7 @@
 <?php
 namespace Snoken\Drivers;
 
-class SQLiteDriver extends Driver
+class MySQLDriver extends Driver
 {
   
   /***
