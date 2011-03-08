@@ -23,7 +23,7 @@ class SQLiteDriver extends Driver
     $stmnt = $this->_connection->prepare($sql);
     // TODO: Throw exception
     if (!$stmnt) print_r($this->_connection->errorInfo());
-    $stmnt->execute(array_values($fields));
+    if (!$stmnt->execute(array_values($fields))) return false;
     return $this->_connection->lastInsertId();
   }
   public function select($table, $condition, $order = null, $limit = null)
@@ -60,7 +60,7 @@ class SQLiteDriver extends Driver
     $stmnt = $this->_connection->prepare($sql);
     // TODO: Throw exception
     if (!$stmnt) print_r($this->_connection->errorInfo());
-    $stmnt->execute(array_merge(array_values($fields), $cond));
+    return $stmnt->execute(array_merge(array_values($fields), $cond));
   }
   public function delete($table, $condition)
   {
@@ -69,7 +69,7 @@ class SQLiteDriver extends Driver
     $stmnt = $this->_connection->prepare($sql);
     // TODO: Throw exception
     if (!$stmnt) print_r($this->_connection->errorInfo());
-    $stmnt->execute($cond);
+    return $stmnt->execute($cond);
   }
   
   public function createTable($table, $fields)

@@ -22,13 +22,30 @@ class Post extends Snoken\Base
 {
   public static $table = 'post';
   public static $fields = array(
-    'title' => array('string', 'max_length' => 64, 'required' => true),
-    'content' => array('text', 'max_length' => 4096, 'required' => true),
+    'title' => array('string', 'max_length' => 64, 'required' => true, 'filter' => 'title_filter'),
+    'content' => array('text', 'max_length' => 4096, 'required' => true, 'validator' => 'content_valid'),
     'user_id' => array('integer', 'required' => true),
   );
   public static $belongs_to = array(
     'user' => array('user', 'field' => 'user_id', /* OTHER OPTIONS */),
   );
+  
+  protected function title_filter($name, $value)
+  {
+  	return strtoupper($value); // CAPS LOCK IS CRUISE CONTROL FOR COOL
+  }
+  
+  protected function content_valid($content, &$error)
+  {
+  	$error = "I don't like it.";
+  	return true;
+  }
+  
+  protected function before_save()
+  {
+  	$this->title .= '!';
+  	return true;
+  }
 }
 
 if (file_exists('./test.db')) unlink('./test.db');

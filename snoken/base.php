@@ -23,22 +23,24 @@ class Base
     if (isset($this->_fields[$field]))
       return $this->_fields[$field];
     if (isset(static::$fields[$field]))
-      return null;    
+      return null;
     if (isset(static::$has[$field]))
       return Manager::select(static::$has[$field][0], array(static::$has[$field]['field'] => $this->_id));
     if (isset(static::$belongs_to[$field]))
       return Manager::getById(static::$belongs_to[$field][0], $this->{$belongs_to[$field]['field']});
     // TODO: Create new exception
-    throw new \SnokenException("Field '{$field}' not in model.");
+    throw new \Snoken\SnokenException("Field '{$field}' not in model.");
   }
   
   public function __set($field, $value)
   {
-    if ($field == 'id') throw new \SnokenException("Field 'id' can not be modified.");
+    if ($field == 'id') throw new \Snoken\SnokenException("Field 'id' can not be modified.");
     // TODO: Create new exception
     if (isset(static::$fields[$field]))
     {
-      if (isset($this->_fields[$field]) && $this->_fields[$field] === $value) return; 
+      $data = static::$fields[$field];
+      if (isset($this->_fields[$field]) && $this->_fields[$field] === $value) return;
+	  if (isset($data['filter'])) $value = call_user_func(array($this, $data['filter']), $field, $value);
       $this->_fields[$field] = $value;
       if (!in_array($field, $this->_changed))
         $this->_changed[] = $field;
@@ -52,8 +54,16 @@ class Base
     }
     else
     {
-      throw new \SnokenException("Field '{$field}' not in model.");
+      throw new \Snoken\SnokenException("Field '{$field}' not in model.");
     }
+  }
+  
+  public function update($fields)
+  {
+  	foreach ($fields as $key => $value)
+	{
+		$this->{$key} = $value;
+	}
   }
   
   public function validate(&$errors = null)
@@ -63,7 +73,13 @@ class Base
     {
       $type = array_shift($field);
       $value = isset($this->_fields[$name]) ? $this->_fields[$name] : null;
-      if (isset($field['required']) && $field['required'] && $value == null)
+	  $validator = isset($field['validator']) ? array($this, $field['validator']) : null;
+	  $message = null;
+	  if ($validator && !call_user_func_array($validator, array($value, &$message)))
+	  {
+	  	$errors[] = $message;
+	  }
+	  else if (isset($field['required']) && $field['required'] && $value == null)
       {
         $errors[] = "Field {$name} is required.";
       }
@@ -93,23 +109,12 @@ class Base
     $errors = null;
     if (!$this->validate($errors))
     {
-      print_r($errors);
-      throw new \SnokenException("Object is not valid.");
+      throw new \Snoken\SnokenException("Object is not valid.");
     }
-    /*
-    foreach (static::$belongs_to as $name => $info)
-    {
-      if (!isset($this->_fields[$name])) continue;
-      $type = array_shift($info);
-      $field = $info['field'];
-      $object = $this->{$name};
-      // TODO: Fix case
-      // if (get_class($object) != )
-      if (!$object->id)
-        $object->save();
-      $this->{$field} = $object->id;
-    }
-    */
+	if (!$this->before_save())
+	{
+	  throw new \Snoken\SnokenException("Before-save hook failed.");
+	} 
     if (count($this->_changed) == 0) return;
     $fields = array();
     foreach ($this->_changed as $field)
@@ -118,18 +123,24 @@ class Base
     }
     if ($this->_id)
     {
-      Manager::getDriver()->update(static::$table, $fields, array('id' => $this->_id));
+      return Manager::getDriver()->update(static::$table, $fields, array('id' => $this->_id));
     }
     else
     {
       $this->_id = Manager::getDriver()->insert(static::$table, $fields);
+	  return $this->_id !== false;
     }
   }
   
   public function delete()
   {
-    if (!$this->_id) throw new \SnokenException("You must save it first, you dolt.");
+    if (!$this->_id) throw new \Snoken\SnokenException("You must save it first, you dolt.");
     Manager::getDriver()->delete(static::$table, array('id' => $this->_id));
+  }
+  
+  protected function before_save()
+  {
+  	return true;
   }
   
   public static function getById($id)
