@@ -9,9 +9,9 @@ class MySQLDriver extends Driver
    */
   private $_connection;
   
-  public function __construct($dsn)
-  {
-    $this->_connection = new \PDO("mysql:{$conn}");
+  public function __construct($dsn, $user = 'root', $password = '')
+  {    
+    $this->_connection = new \PDO("mysql:{$dsn}", $user, $password);
     $this->_connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
   }
   
@@ -22,7 +22,7 @@ class MySQLDriver extends Driver
     $sql = "INSERT INTO {$table} ($fieldnames) VALUES ($values);";
     $stmnt = $this->_connection->prepare($sql);
     if (!$stmnt) print_r($this->_connection->errorInfo());
-    if (!$stmnt->execute(array_values($fields))) return false;
+    $stmnt->execute(array_values($fields));
     return $this->_connection->lastInsertId();
   }
   public function select($table, $condition, $order = null, $limit = null)
@@ -37,9 +37,7 @@ class MySQLDriver extends Driver
     }
     if ($limit)
       $sql .= " LIMIT {$limit}";
-    $sql .= ";";
-    echo $sql, "\n";
-    print_r($cond);
+    $sql .= ";";    
     $stmnt = $this->_connection->prepare($sql);
     if (!$stmnt) print_r($this->_connection->errorInfo());
     $stmnt->execute($cond);
@@ -59,7 +57,7 @@ class MySQLDriver extends Driver
     $sql = "UPDATE {$table} SET {$values} WHERE {$where};";
     $stmnt = $this->_connection->prepare($sql);
     if (!$stmnt) print_r($this->_connection->errorInfo());
-    return $stmnt->execute(array_merge(array_values($fields), $cond));
+    $stmnt->execute(array_merge(array_values($fields), $cond));
   }
   public function delete($table, $condition)
   {
@@ -67,7 +65,7 @@ class MySQLDriver extends Driver
     $sql = "DELETE FROM {$table} WHERE " . array_shift($cond) . ";";
     $stmnt = $this->_connection->prepare($sql);
     if (!$stmnt) print_r($this->_connection->errorInfo());
-    return $stmnt->execute($cond);
+    $stmnt->execute($cond);
   }
   
   public function createTable($table, $fields)
